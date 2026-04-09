@@ -454,6 +454,14 @@ def export_mock_csvs(output_dir: str | Path | None = None) -> tuple[Path, Path]:
                 writer.writerow([row["date"].isoformat(), row["merchant"], f"{row['amount']:.2f}"])
     return source_path, reference_path
 
+def format_pair_line(pair: ReconciliationPair) -> str:
+    source = pair["source"]
+    reference = pair["reference"]
+    return (
+        f"{source['date'].isoformat()} {source['merchant']} {format_money(source['amount'])}  ||  "
+        f"{reference['date'].isoformat()} {reference['merchant']} {format_money(reference['amount'])}  "
+        f"[confidence {pair['confidence']:.2f}]"
+    )
 
 
 
