@@ -151,7 +151,14 @@ def detect_duplicates(records: list[ReconciliationRecord], near_duplicate_days: 
 
     return cast(DuplicateDetectionResult, {"exact": exact_duplicates, "near": near_duplicates})
 
-
+def build_confidence(name_similarity: float, date_gap: int, amount_gap_cents: int, date_tolerance: int, amount_tolerance_cents: int) -> float:
+    date_component = 1.0 if date_tolerance == 0 and date_gap == 0 else max(0.0, 1.0 - (date_gap / max(1, date_tolerance + 1)))
+    if amount_tolerance_cents == 0 and amount_gap_cents == 0:
+        amount_component = 1.0
+    else:
+        amount_component = max(0.0, 1.0 - (amount_gap_cents / max(1, amount_tolerance_cents * 3)))
+    score = (name_similarity * 0.5) + (date_component * 0.25) + (amount_component * 0.25)
+    return round(score, 3)
 
 
 
