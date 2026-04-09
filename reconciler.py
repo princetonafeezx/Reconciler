@@ -175,6 +175,30 @@ def pair_result(
         },
     )
 
+def exact_match_pass(
+    source_records: list[ReconciliationRecord], reference_records: list[ReconciliationRecord]
+) -> tuple[list[ReconciliationPair], set[int], set[int]]:
+    reference_lookup: dict[tuple[Any, ...], list[int]] = {}
+    used_reference: set[int] = set()
+    used_source: set[int] = set()
+    matches: list[ReconciliationPair] = []
+
+    for index, record in enumerate(reference_records):
+        key = (record["date"], record["merchant_key"], record["amount_cents"])
+        reference_lookup.setdefault(key, []).append(index)
+
+    for source_index, source_record in enumerate(source_records):
+        key = (source_record["date"], source_record["merchant_key"], source_record["amount_cents"])
+        candidates = reference_lookup.get(key, [])
+        while candidates and candidates[0] in used_reference:
+            candidates.pop(0)
+        if candidates:
+            reference_index = candidates.pop(0)
+            used_source.add(source_index)
+            used_reference.add(reference_index)
+            matches.append(pair_result(source_record, reference_records[reference_index], 1.0, "exact"))
+
+    return matches, used_source, used_reference
 
 
 
