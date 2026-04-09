@@ -406,6 +406,46 @@ def reconcile(
         },
     )
 
+def mock_transaction_sets() -> tuple[list[ReconciliationRecord], list[ReconciliationRecord]]:
+    source_rows: list[dict[str, Any]] = [
+        {"date": date(2026, 3, 1), "merchant": "Whole Foods", "amount": 83.21},
+        {"date": date(2026, 3, 2), "merchant": "Shell", "amount": 48.10},
+        {"date": date(2026, 3, 4), "merchant": "Netflix", "amount": 15.49},
+        {"date": date(2026, 3, 5), "merchant": "Starbucks", "amount": 6.25},
+        {"date": date(2026, 3, 8), "merchant": "Amazon Marketplace", "amount": 120.00},
+        {"date": date(2026, 3, 10), "merchant": "Starbucks", "amount": 6.25},
+        {"date": date(2026, 3, 10), "merchant": "Starbucks", "amount": 6.25},
+        {"date": date(2026, 3, 12), "merchant": "Walgreens", "amount": 18.45},
+    ]
+    reference_rows: list[dict[str, Any]] = [
+        {"date": date(2026, 3, 1), "merchant": "Whole Foods", "amount": 83.21},
+        {"date": date(2026, 3, 3), "merchant": "Shell Oil", "amount": 48.10},
+        {"date": date(2026, 3, 4), "merchant": "Netflixx", "amount": 15.49},
+        {"date": date(2026, 3, 5), "merchant": "Starbucks", "amount": 5.95},
+        {"date": date(2026, 3, 8), "merchant": "Amazon Marketplace", "amount": 118.50},
+        {"date": date(2026, 3, 12), "merchant": "Walgreens", "amount": 18.45},
+        {"date": date(2026, 3, 15), "merchant": "Trader Joes", "amount": 64.88},
+    ]
+
+    for row in source_rows:
+        row["merchant_key"] = clean_text(str(row["merchant"]))
+        row["amount_cents"] = cents(float(row["amount"]))
+        row["source_label"] = "source"
+        row["line_number"] = 0
+    for row in reference_rows:
+        row["merchant_key"] = clean_text(str(row["merchant"]))
+        row["amount_cents"] = cents(float(row["amount"]))
+        row["source_label"] = "reference"
+        row["line_number"] = 0
+    return cast(list[ReconciliationRecord], source_rows), cast(list[ReconciliationRecord], reference_rows)
+
+
+
+
+
+
+
+
 
 
 
