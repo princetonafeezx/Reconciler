@@ -123,6 +123,33 @@ def load_transactions(
                 warnings.append(f"{label} line {line_number} skipped: {error}")
     return records, warnings
 
+def detect_duplicates(records: list[ReconciliationRecord], near_duplicate_days: int = 2) -> DuplicateDetectionResult:
+    exact_groups: dict[tuple[Any, ...], list[ReconciliationRecord]] = {}
+    near_groups: dict[tuple[Any, ...], list[ReconciliationRecord]] = {}
+    exact_duplicates: list[dict[str, Any]] = []
+    near_duplicates: list[dict[str, Any]] = []
+
+    for record in records:
+        exact_key = (record["merchant_key"], record["amount_cents"], record["date"])
+        exact_groups.setdefault(exact_key, []).append(record)
+
+        near_key = (record["merchant_key"], record["amount_cents"])
+        near_groups.setdefault(near_key, []).append(record)
+
+    for group in exact_groups.values():
+        if len(group) > 1:
+            exact_duplicates.append({"record": group[0], "count": len(group)})
+
+    for group in near_groups.values():
+        ordered = sorted(group, key=lambda item: item["date"])
+        if len(ordered) < 2:
+            continue
+        for left_index in range(len(ordered) - 1):
+            gap = abs((ordered[left_index + 1]["date"] - ordered[left_index]["date"]).days)
+            if gap <= near_duplicate_days:
+                near_duplicates.append({"record": ordered[left_index], "next_record": ordered[left_index + 1], "gap": gap})
+
+    return cast(DuplicateDetectionResult, {"exact": exact_duplicates, "near": near_duplicates})
 
 
 
