@@ -814,22 +814,17 @@ def run_cli_args(args: argparse.Namespace) -> int:
 
     return 0
 
+def main(argv: list[str] | None = None) -> None:
+    if argv is None:
+        argv = sys.argv[1:]
+    if not argv:
+        menu()
+        return
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    parser = _build_arg_parser()
+    args = parser.parse_args(argv)
+    code = run_cli_args(args)
+    raise SystemExit(code)
 
 
 if __name__ == "__main__":
