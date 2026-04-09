@@ -563,6 +563,53 @@ def build_report_text(
 
     return "\n".join(lines)
 
+def run_reconciliation(
+    source_file: str | Path | None = None,
+    reference_file: str | Path | None = None,
+    fuzzy_threshold: float = 0.80,
+    date_tolerance: int = 2,
+    amount_tolerance: float = 0.50,
+    use_mock: bool = False,
+    export_report: bool = False,
+    output_dir: str | Path | None = None,
+) -> RunReconciliationResult:
+    warnings: list[str] = []
+    if use_mock:
+        source_records, reference_records = mock_transaction_sets()
+    else:
+        if source_file is None or reference_file is None:
+            raise ValueError("Both source and reference files are required unless mock mode is enabled.")
+        source_records, source_warnings = load_transactions(source_file, "Source")
+        reference_records, reference_warnings = load_transactions(reference_file, "Reference")
+        warnings.extend(source_warnings)
+        warnings.extend(reference_warnings)
+
+    duplicate_source = detect_duplicates(source_records)
+    duplicate_reference = detect_duplicates(reference_records)
+    report = reconcile(
+        source_records,
+        reference_records,
+        fuzzy_threshold=fuzzy_threshold,
+        date_tolerance=date_tolerance,
+        amount_tolerance=amount_tolerance,
+    )
+    report_text = build_report_text(report, duplicate_source, duplicate_reference)
+
+    output_path = None
+    if export_report:
+        output_path = write_text_report(report_text, Path(output_dir or Path.cwd()) / "reconciliation_report.txt")
+
+    return cast(
+        RunReconciliationResult,
+        {
+            "report": report,
+            "report_text": report_text,
+            "warnings": warnings,
+            "duplicate_source": duplicate_source,
+            "duplicate_reference": duplicate_reference,
+            "output_path": output_path,
+        },
+    )
 
 
 
