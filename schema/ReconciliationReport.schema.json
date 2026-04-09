@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./ReconciliationReport.schema.json",
+  "title": "ReconciliationReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "matched",
+    "amount_mismatch",
+    "date_mismatch",
+    "suspicious",
+    "unmatched_source",
+    "unmatched_reference",
+    "set_summary",
+    "source_total",
+    "reference_total",
+    "net_difference",
+    "match_rate",
+    "source_count",
+    "reference_count"
+  ],
+  "properties": {
+    "matched": {
+      "type": "array",
+      "items": {
+        "$ref": "./ReconciliationPair.schema.json"
+      }
+    },
+    "amount_mismatch": {
+      "type": "array",
+      "items": {
+        "$ref": "./ReconciliationPair.schema.json"
+      }
+    },
+    "date_mismatch": {
+      "type": "array",
+      "items": {
+        "$ref": "./ReconciliationPair.schema.json"
+      }
+    },
+    "suspicious": {
+      "type": "array",
+      "items": {
+        "$ref": "./ReconciliationPair.schema.json"
+      }
+    },
+    "unmatched_source": {
+      "type": "array",
+      "items": {
+        "$ref": "./ReconciliationRecord.schema.json"
+      }
+    },
+    "unmatched_reference": {
+      "type": "array",
+      "items": {
+        "$ref": "./ReconciliationRecord.schema.json"
+      }
+    },
+    "set_summary": {
+      "$ref": "./ReconciliationSetSummary.schema.json"
+    },
+    "source_total": {
+      "type": "number"
+    },
+    "reference_total": {
+      "type": "number"
+    },
+    "net_difference": {
+      "type": "number"
+    },
+    "match_rate": {
+      "type": "number"
+    },
+    "source_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "reference_count": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

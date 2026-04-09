@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./RunReconciliationResult.schema.json",
+  "title": "RunReconciliationResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report",
+    "report_text",
+    "warnings",
+    "duplicate_source",
+    "duplicate_reference",
+    "output_path"
+  ],
+  "properties": {
+    "report": {
+      "$ref": "./ReconciliationReport.schema.json"
+    },
+    "report_text": {
+      "type": "string"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "duplicate_source": {
+      "$ref": "./DuplicateDetectionResult.schema.json"
+    },
+    "duplicate_reference": {
+      "$ref": "./DuplicateDetectionResult.schema.json"
+    },
+    "output_path": {
+      "description": "Filesystem path returned by the Python app, represented here as a string path or null.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

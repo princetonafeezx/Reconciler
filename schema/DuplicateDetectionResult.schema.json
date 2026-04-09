@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./DuplicateDetectionResult.schema.json",
+  "title": "DuplicateDetectionResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exact",
+    "near"
+  ],
+  "properties": {
+    "exact": {
+      "type": "array",
+      "items": {
+        "$ref": "./DuplicateExactItem.schema.json"
+      }
+    },
+    "near": {
+      "type": "array",
+      "items": {
+        "$ref": "./DuplicateNearItem.schema.json"
+      }
+    }
+  }
+}

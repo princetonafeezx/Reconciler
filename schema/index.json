@@ -1,0 +1,17 @@
+{
+  "name": "Reconciler Schema Pack",
+  "repository": "https://github.com/princetonafeezx/Reconciler",
+  "folder": "Schema",
+  "files": [
+    "TransactionInputRow.schema.json",
+    "CategorizedRecord.schema.json",
+    "ReconciliationRecord.schema.json",
+    "ReconciliationPair.schema.json",
+    "ReconciliationSetSummary.schema.json",
+    "ReconciliationReport.schema.json",
+    "DuplicateExactItem.schema.json",
+    "DuplicateNearItem.schema.json",
+    "DuplicateDetectionResult.schema.json",
+    "RunReconciliationResult.schema.json"
+  ]
+}

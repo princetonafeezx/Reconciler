@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./ReconciliationSetSummary.schema.json",
+  "title": "ReconciliationSetSummary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "shared_keys",
+    "source_only_keys",
+    "reference_only_keys",
+    "symmetric_difference"
+  ],
+  "properties": {
+    "shared_keys": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source_only_keys": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "reference_only_keys": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "symmetric_difference": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

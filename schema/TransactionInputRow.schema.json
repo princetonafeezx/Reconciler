@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./TransactionInputRow.schema.json",
+  "title": "TransactionInputRow",
+  "description": "Simple input transaction row inferred from the repository's CSV usage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "date",
+    "merchant",
+    "amount"
+  ],
+  "properties": {
+    "date": {
+      "description": "Transaction date as an ISO date string such as 2026-03-01.",
+      "type": "string",
+      "format": "date"
+    },
+    "merchant": {
+      "type": "string",
+      "minLength": 1
+    },
+    "amount": {
+      "description": "Transaction amount in dollars.",
+      "type": [
+        "number",
+        "string"
+      ]
+    }
+  }
+}

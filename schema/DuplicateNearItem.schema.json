@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./DuplicateNearItem.schema.json",
+  "title": "DuplicateNearItem",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record",
+    "next_record",
+    "gap"
+  ],
+  "properties": {
+    "record": {
+      "$ref": "./ReconciliationRecord.schema.json"
+    },
+    "next_record": {
+      "$ref": "./ReconciliationRecord.schema.json"
+    },
+    "gap": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

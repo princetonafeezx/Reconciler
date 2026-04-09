@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./ReconciliationRecord.schema.json",
+  "title": "ReconciliationRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "date",
+    "merchant",
+    "merchant_key",
+    "amount",
+    "amount_cents",
+    "source_label",
+    "line_number"
+  ],
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "merchant": {
+      "type": "string"
+    },
+    "merchant_key": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "amount_cents": {
+      "type": "integer"
+    },
+    "source_label": {
+      "type": "string"
+    },
+    "line_number": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

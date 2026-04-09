@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "./CategorizedRecord.schema.json",
+  "title": "CategorizedRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "date",
+    "merchant",
+    "amount",
+    "category"
+  ],
+  "properties": {
+    "date": {
+      "description": "Original transaction date; the repo accepts a string or Python date object, represented here as an ISO date string.",
+      "type": "string",
+      "format": "date"
+    },
+    "merchant": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string"
+    },
+    "subcategory": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "match_type": {
+      "type": "string"
+    }
+  }
+}
