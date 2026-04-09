@@ -699,6 +699,63 @@ def menu() -> None:
             print("Exiting reconciler.")
             break
 
+def _build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Compare two transaction CSVs and report matches, mismatches, and duplicates.",
+    )
+    parser.add_argument(
+        "--menu",
+        action="store_true",
+        help="Open the interactive menu (default when no other CLI flags are used).",
+    )
+    parser.add_argument("--source", type=Path, metavar="PATH", help="Source CSV (e.g. bank export).")
+    parser.add_argument("--reference", type=Path, metavar="PATH", help="Reference CSV (e.g. personal ledger).")
+    parser.add_argument(
+        "--mock",
+        action="store_true",
+        help="Use built-in sample data instead of files.",
+    )
+    parser.add_argument(
+        "--export",
+        action="store_true",
+        help="Write reconciliation_report.txt to --output-dir or the current directory.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        help="Directory for --export (default: current working directory).",
+    )
+    parser.add_argument(
+        "--fuzzy",
+        type=float,
+        default=80.0,
+        metavar="PCT",
+        help="Merchant fuzzy-match threshold as percent 0–100 (default: 80).",
+    )
+    parser.add_argument(
+        "--date-tolerance",
+        type=int,
+        default=2,
+        metavar="DAYS",
+        help="Match if dates are within this many days (default: 2).",
+    )
+    parser.add_argument(
+        "--amount-tolerance",
+        type=float,
+        default=0.50,
+        metavar="USD",
+        help="Treat amounts within this dollar spread as compatible (default: 0.50).",
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Log debug details to stderr.")
+    parser.add_argument("-q", "--quiet", action="store_true", help="Less logging to stderr (warnings and errors only).")
+    parser.add_argument(
+        "--quiet-report",
+        action="store_true",
+        help="Do not print the report to stdout (still writes a file when using --export).",
+    )
+    return parser
+
 
 
 
