@@ -160,6 +160,21 @@ def build_confidence(name_similarity: float, date_gap: int, amount_gap_cents: in
     score = (name_similarity * 0.5) + (date_component * 0.25) + (amount_component * 0.25)
     return round(score, 3)
 
+def pair_result(
+    source_record: ReconciliationRecord, reference_record: ReconciliationRecord, confidence: float, reason: str
+) -> ReconciliationPair:
+    return cast(
+        ReconciliationPair,
+        {
+            "source": source_record,
+            "reference": reference_record,
+            "confidence": confidence,
+            "reason": reason,
+            "amount_delta": round(source_record["amount"] - reference_record["amount"], 2),
+            "date_gap": abs((source_record["date"] - reference_record["date"]).days),
+        },
+    )
+
 
 
 
