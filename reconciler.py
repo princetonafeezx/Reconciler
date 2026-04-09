@@ -76,6 +76,52 @@ def detect_columns(headers: list[str], column_map: dict[str, Any] | None = None)
 
     return resolved
 
+def load_transactions(
+    file_path: str | Path, label: str, column_map: dict[str, Any] | None = None
+) -> tuple[list[ReconciliationRecord], list[str]]:
+    path = Path(file_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Could not find file: {path}")
+
+    warnings: list[str] = []
+    records: list[ReconciliationRecord] = []
+
+    with path.open("r", newline="", encoding="utf-8-sig") as handle:
+        reader = csv.reader(handle)
+        try:
+            headers = next(reader)
+        except StopIteration:
+            return [], [f"{label} file was empty."]
+
+        mapping = detect_columns(headers, column_map=column_map)
+
+        for line_number, row in enumerate(reader, start=2):
+            if not row or not any(cell.strip() for cell in row):
+                continue
+            try:
+                di = mapping["date"]
+                mi = mapping["merchant"]
+                ai = mapping["amount"]
+                if di is None or mi is None or ai is None:
+                    raise ValueError("Row did not contain the mapped columns")
+                if max(di, mi, ai) >= len(row):
+                    raise ValueError("Row did not contain the mapped columns")
+                raw_merchant = row[mi].strip()
+                raw_amount = row[ai].strip()
+                amount = parse_amount(raw_amount)
+                record: ReconciliationRecord = {
+                    "date": parse_date(row[di]),
+                    "merchant": raw_merchant,
+                    "merchant_key": clean_text(raw_merchant),
+                    "amount": amount,
+                    "amount_cents": cents(amount),
+                    "source_label": label,
+                    "line_number": line_number,
+                }
+                records.append(record)
+            except (ValueError, TypeError, KeyError, IndexError) as error:
+                warnings.append(f"{label} line {line_number} skipped: {error}")
+    return records, warnings
 
 
 
