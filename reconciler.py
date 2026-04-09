@@ -756,6 +756,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     return parser
 
+def _configure_logging(verbose: bool, quiet: bool) -> None:
+    if quiet:
+        logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(message)s", force=True)
+        return
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(level=level, format="%(levelname)s %(message)s", force=True)
 
 
 
