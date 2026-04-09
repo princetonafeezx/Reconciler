@@ -439,6 +439,20 @@ def mock_transaction_sets() -> tuple[list[ReconciliationRecord], list[Reconcilia
         row["line_number"] = 0
     return cast(list[ReconciliationRecord], source_rows), cast(list[ReconciliationRecord], reference_rows)
 
+def export_mock_csvs(output_dir: str | Path | None = None) -> tuple[Path, Path]:
+    source_rows, reference_rows = mock_transaction_sets()
+    folder = Path(output_dir) if output_dir else Path.cwd()
+    folder.mkdir(parents=True, exist_ok=True)
+    source_path = folder / "mock_source.csv"
+    reference_path = folder / "mock_reference.csv"
+
+    for target_path, rows in ((source_path, source_rows), (reference_path, reference_rows)):
+        with target_path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.writer(handle)
+            writer.writerow(["date", "merchant", "amount"])
+            for row in rows:
+                writer.writerow([row["date"].isoformat(), row["merchant"], f"{row['amount']:.2f}"])
+    return source_path, reference_path
 
 
 
