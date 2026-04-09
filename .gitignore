@@ -1,0 +1,35 @@
+# Python internals
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env/
+
+# Packaging / build
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Caches & coverage
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Reconciler outputs and default data dir
+reconciliation_report.txt
+reconciliation_summary.txt
+mock_source.csv
+mock_reference.csv
+reconciler_data/
+
+# IDE and system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
