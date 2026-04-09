@@ -763,6 +763,11 @@ def _configure_logging(verbose: bool, quiet: bool) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(level=level, format="%(levelname)s %(message)s", force=True)
 
+def _fuzzy_threshold_from_percent(value: float) -> float:
+    if value > 1.0:
+        return max(0.0, min(1.0, value / 100.0))
+    return max(0.0, min(1.0, value))
+
 
 
 
