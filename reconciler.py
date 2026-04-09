@@ -1,5 +1,3 @@
-"""Expense discrepancy detector — compare two CSV ledgers and report differences."""
-
 from __future__ import annotations
 
 import argparse
@@ -25,6 +23,30 @@ from textutil import clean_text, similarity_ratio
 logger = logging.getLogger(__name__)
 
 ColumnMap = dict[str, int | None]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
