@@ -463,6 +463,106 @@ def format_pair_line(pair: ReconciliationPair) -> str:
         f"[confidence {pair['confidence']:.2f}]"
     )
 
+def build_report_text(
+    report: ReconciliationReport, duplicate_source: DuplicateDetectionResult, duplicate_reference: DuplicateDetectionResult
+) -> str:
+    lines = []
+    lines.append("Reconciliation Report")
+    lines.append("=" * 40)
+    lines.append(
+        f"Source transactions: {report['source_count']} | "
+        f"Reference transactions: {report['reference_count']} | "
+        f"Match rate (coverage vs larger file): {report['match_rate']:.1f}%"
+    )
+    lines.append(
+        f"Discrepancies: {len(report['amount_mismatch']) + len(report['date_mismatch']) + len(report['suspicious']) + len(report['unmatched_source']) + len(report['unmatched_reference'])}"
+    )
+    lines.append(
+        f"Set summary - shared: {report['set_summary']['shared_keys']}, "
+        f"source only: {report['set_summary']['source_only_keys']}, "
+        f"reference only: {report['set_summary']['reference_only_keys']}, "
+        f"symmetric diff: {report['set_summary']['symmetric_difference']}"
+    )
+    lines.append(
+        f"Grand totals - source: {format_money(report['source_total'])}, "
+        f"reference: {format_money(report['reference_total'])}, "
+        f"net difference: {format_money(report['net_difference'])}"
+    )
+    lines.append("")
+
+    lines.append("Matched")
+    lines.append("-" * 40)
+    if report["matched"]:
+        for pair in report["matched"]:
+            lines.append(format_pair_line(pair))
+    else:
+        lines.append("No confirmed matches.")
+    lines.append("")
+
+    lines.append("Amount Mismatches")
+    lines.append("-" * 40)
+    if report["amount_mismatch"]:
+        for pair in report["amount_mismatch"]:
+            lines.append(f"{format_pair_line(pair)} | delta {format_money(pair['amount_delta'])}")
+    else:
+        lines.append("No amount mismatches.")
+    lines.append("")
+
+    lines.append("Date Mismatches")
+    lines.append("-" * 40)
+    if report["date_mismatch"]:
+        for pair in report["date_mismatch"]:
+            lines.append(f"{format_pair_line(pair)} | date gap {pair['date_gap']} day(s)")
+    else:
+        lines.append("No date mismatches.")
+    lines.append("")
+
+    lines.append("Suspicious Entries")
+    lines.append("-" * 40)
+    if report["suspicious"]:
+        for pair in report["suspicious"]:
+            lines.append(format_pair_line(pair))
+    else:
+        lines.append("No suspicious fuzzy matches.")
+    lines.append("")
+
+    lines.append("Unmatched Source Only")
+    lines.append("-" * 40)
+    if report["unmatched_source"]:
+        for row in report["unmatched_source"]:
+            lines.append(f"{row['date'].isoformat()} {row['merchant']} {format_money(row['amount'])}")
+    else:
+        lines.append("None.")
+    lines.append("")
+
+    lines.append("Unmatched Reference Only")
+    lines.append("-" * 40)
+    if report["unmatched_reference"]:
+        for row in report["unmatched_reference"]:
+            lines.append(f"{row['date'].isoformat()} {row['merchant']} {format_money(row['amount'])}")
+    else:
+        lines.append("None.")
+    lines.append("")
+
+    lines.append("Duplicates")
+    lines.append("-" * 40)
+    if duplicate_source["exact"] or duplicate_reference["exact"] or duplicate_source["near"] or duplicate_reference["near"]:
+        for label, duplicate_report in (("Source", duplicate_source), ("Reference", duplicate_reference)):
+            for exact_item in duplicate_report["exact"]:
+                row = exact_item["record"]
+                lines.append(
+                    f"{label} exact duplicate: {row['merchant']} {format_money(row['amount'])} x{exact_item['count']}"
+                )
+            for near_item in duplicate_report["near"]:
+                row = near_item["record"]
+                lines.append(
+                    f"{label} near duplicate: {row['merchant']} {format_money(row['amount'])} within {near_item['gap']} day(s)"
+                )
+    else:
+        lines.append("No duplicates flagged.")
+
+    return "\n".join(lines)
+
 
 
 
