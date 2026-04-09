@@ -200,6 +200,63 @@ def exact_match_pass(
 
     return matches, used_source, used_reference
 
+def exact_merchant_pass(
+    source_records: list[ReconciliationRecord],
+    reference_records: list[ReconciliationRecord],
+    used_source: set[int],
+    used_reference: set[int],
+    date_tolerance: int,
+    amount_tolerance_cents: int,
+) -> dict[str, Any]:
+    results: dict[str, list[Any]] = {"matched": [], "amount_mismatch": [], "date_mismatch": [], "suspicious": []}
+    merchant_lookup: dict[str, list[int]] = {}
+    for index, record in enumerate(reference_records):
+        if index in used_reference:
+            continue
+        merchant_lookup.setdefault(record["merchant_key"], []).append(index)
+
+    for source_index, source_record in enumerate(source_records):
+        if source_index in used_source:
+            continue
+        candidates = merchant_lookup.get(source_record["merchant_key"], [])
+        best = None
+        best_type = None
+        best_index = None
+
+        for reference_index in candidates:
+            if reference_index in used_reference:
+                continue
+            reference_record = reference_records[reference_index]
+            date_gap = abs((source_record["date"] - reference_record["date"]).days)
+            amount_gap_cents = abs(source_record["amount_cents"] - reference_record["amount_cents"])
+            confidence = build_confidence(1.0, date_gap, amount_gap_cents, date_tolerance, amount_tolerance_cents)
+
+            if date_gap <= date_tolerance and amount_gap_cents <= amount_tolerance_cents:
+                candidate_type = "matched"
+            elif date_gap <= date_tolerance and amount_gap_cents > amount_tolerance_cents:
+                candidate_type = "amount_mismatch"
+            elif date_gap > date_tolerance and amount_gap_cents <= amount_tolerance_cents:
+                candidate_type = "date_mismatch"
+            else:
+                candidate_type = "suspicious"
+
+            if best is None or confidence > best["confidence"]:
+                best = pair_result(source_record, reference_record, confidence, "exact merchant")
+                best_type = candidate_type
+                best_index = reference_index
+
+        if best is not None and best_type is not None and best_index is not None:
+            results[best_type].append(best)
+            used_source.add(source_index)
+            used_reference.add(best_index)
+
+    return results
+
+
+
+
+
+
 
 
 
