@@ -768,6 +768,51 @@ def _fuzzy_threshold_from_percent(value: float) -> float:
         return max(0.0, min(1.0, value / 100.0))
     return max(0.0, min(1.0, value))
 
+def run_cli_args(args: argparse.Namespace) -> int:
+    _configure_logging(args.verbose, args.quiet)
+    if args.quiet and args.verbose:
+        logger.warning("Both --quiet and --verbose; using quiet logging levels.")
+
+    use_cli = args.source is not None or args.reference is not None or args.mock or args.export
+    if args.menu or not use_cli:
+        menu()
+        return 0
+
+    if args.mock:
+        if args.source is not None or args.reference is not None:
+            logger.error("Do not combine --mock with --source/--reference.")
+            return 2
+    else:
+        if args.source is None or args.reference is None:
+            logger.error("Provide both --source and --reference, or use --mock.")
+            return 2
+
+    fuzzy = _fuzzy_threshold_from_percent(args.fuzzy)
+    try:
+        result = run_reconciliation(
+            source_file=args.source,
+            reference_file=args.reference,
+            fuzzy_threshold=fuzzy,
+            date_tolerance=args.date_tolerance,
+            amount_tolerance=args.amount_tolerance,
+            use_mock=args.mock,
+            export_report=args.export,
+            output_dir=args.output_dir,
+        )
+    except (ValueError, FileNotFoundError, OSError, UnicodeDecodeError) as exc:
+        logger.error("%s", exc)
+        return 1
+
+    for warning in result["warnings"]:
+        logger.warning("%s", warning)
+
+    if not args.quiet_report:
+        print(result["report_text"])
+
+    if args.export and result["output_path"] is not None:
+        logger.info("Report file: %s", result["output_path"])
+
+    return 0
 
 
 
