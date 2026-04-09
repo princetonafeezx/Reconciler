@@ -611,6 +611,93 @@ def run_reconciliation(
         },
     )
 
+def menu() -> None:
+    valid_choices = {"1", "2", "3", "4", "5"}
+    current_source = None
+    current_reference = None
+    fuzzy_threshold = 0.80
+    date_tolerance = 2
+    amount_tolerance = 0.50
+    last_result = None
+
+    while True:
+        print()
+        print("Expense Reconciliation")
+        print("1. Load two files")
+        print("2. Generate mock data")
+        print("3. Run reconciliation")
+        print("4. Adjust thresholds")
+        print("5. Quit")
+        choice = input("Choose an option: ").strip()
+        if choice not in valid_choices:
+            print("Please choose one of the listed options.")
+            continue
+
+        if choice == "1":
+            current_source = input("Source CSV path: ").strip()
+            current_reference = input("Reference CSV path: ").strip()
+            print("File paths saved.")
+
+        elif choice == "2":
+            source_path, reference_path = export_mock_csvs()
+            current_source = str(source_path)
+            current_reference = str(reference_path)
+            print(f"Mock files written to {source_path} and {reference_path}.")
+
+        elif choice == "3":
+            try:
+                if current_source and current_reference:
+                    last_result = run_reconciliation(
+                        source_file=current_source,
+                        reference_file=current_reference,
+                        fuzzy_threshold=fuzzy_threshold,
+                        date_tolerance=date_tolerance,
+                        amount_tolerance=amount_tolerance,
+                    )
+                else:
+                    last_result = run_reconciliation(
+                        use_mock=True,
+                        fuzzy_threshold=fuzzy_threshold,
+                        date_tolerance=date_tolerance,
+                        amount_tolerance=amount_tolerance,
+                    )
+                    print("No files were loaded, so mock data was used.")
+                for warning in last_result["warnings"]:
+                    print(warning)
+                print(last_result["report_text"])
+                export = input("Export this report to a text file too? (y/n): ").strip().lower()
+                if export == "y":
+                    rerun = run_reconciliation(
+                        source_file=current_source,
+                        reference_file=current_reference,
+                        fuzzy_threshold=fuzzy_threshold,
+                        date_tolerance=date_tolerance,
+                        amount_tolerance=amount_tolerance,
+                        use_mock=(current_source is None or current_reference is None),
+                        export_report=True,
+                    )
+                    print(f"Report exported to {rerun['output_path']}")
+            except (ValueError, FileNotFoundError, OSError, UnicodeDecodeError, KeyError, TypeError, IndexError) as error:
+                print(f"Could not run reconciliation: {error}")
+
+        elif choice == "4":
+            fuzzy_text = input(f"Fuzzy threshold 0-100 [{int(fuzzy_threshold * 100)}]: ").strip()
+            date_text = input(f"Date tolerance days [{date_tolerance}]: ").strip()
+            amount_text = input(f"Amount tolerance dollars [{amount_tolerance}]: ").strip()
+            try:
+                if fuzzy_text:
+                    fuzzy_threshold = float(fuzzy_text) / 100
+                if date_text:
+                    date_tolerance = int(date_text)
+                if amount_text:
+                    amount_tolerance = float(amount_text)
+                print("Thresholds updated.")
+            except ValueError:
+                print("One of those values was invalid, so the old settings stayed in place.")
+
+        elif choice == "5":
+            print("Exiting reconciler.")
+            break
 
 
 
