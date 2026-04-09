@@ -322,7 +322,89 @@ def unmatched_records(records: list[ReconciliationRecord], used_indexes: set[int
             leftovers.append(record)
     return leftovers
 
+def reconcile(
+    source_records: list[ReconciliationRecord],
+    reference_records: list[ReconciliationRecord],
+    fuzzy_threshold: float = 0.80,
+    date_tolerance: int = 2,
+    amount_tolerance: float = 0.50,
+) -> ReconciliationReport:
 
+    amount_tolerance_cents = cents(amount_tolerance)
+
+    exact_matches, used_source, used_reference = exact_match_pass(source_records, reference_records)
+    exact_merchant_results = exact_merchant_pass(
+        source_records,
+        reference_records,
+        used_source,
+        used_reference,
+        date_tolerance=date_tolerance,
+        amount_tolerance_cents=amount_tolerance_cents,
+    )
+    fuzzy_results = fuzzy_match_pass(
+        source_records,
+        reference_records,
+        used_source,
+        used_reference,
+        fuzzy_threshold=fuzzy_threshold,
+        date_tolerance=date_tolerance,
+        amount_tolerance_cents=amount_tolerance_cents,
+    )
+
+    unmatched_source = unmatched_records(source_records, used_source)
+    unmatched_reference = unmatched_records(reference_records, used_reference)
+
+    source_keys = {(record["date"], record["merchant_key"]) for record in source_records}
+    reference_keys = {(record["date"], record["merchant_key"]) for record in reference_records}
+    shared_keys = source_keys & reference_keys
+    source_only_keys = source_keys - reference_keys
+    reference_only_keys = reference_keys - source_keys
+    symmetric_difference_keys = source_keys ^ reference_keys
+
+    matched_pairs = exact_matches + exact_merchant_results["matched"] + fuzzy_results["matched"]
+    amount_mismatches = exact_merchant_results["amount_mismatch"] + fuzzy_results["amount_mismatch"]
+    date_mismatches = exact_merchant_results["date_mismatch"] + fuzzy_results["date_mismatch"]
+    suspicious = exact_merchant_results["suspicious"] + fuzzy_results["suspicious"]
+
+    source_total = round(sum(record["amount"] for record in source_records), 2)
+    reference_total = round(sum(record["amount"] for record in reference_records), 2)
+    baseline_size = max(len(source_records), len(reference_records), 1)
+    match_rate = (len(matched_pairs) / baseline_size) * 100
+
+    logger.debug(
+        "Reconcile summary: matched=%d amount_mismatch=%d date_mismatch=%d suspicious=%d "
+        "unmatched_src=%d unmatched_ref=%d",
+        len(matched_pairs),
+        len(amount_mismatches),
+        len(date_mismatches),
+        len(suspicious),
+        len(unmatched_source),
+        len(unmatched_reference),
+    )
+
+    return cast(
+        ReconciliationReport,
+        {
+            "matched": matched_pairs,
+            "amount_mismatch": amount_mismatches,
+            "date_mismatch": date_mismatches,
+            "suspicious": suspicious,
+            "unmatched_source": unmatched_source,
+            "unmatched_reference": unmatched_reference,
+            "set_summary": {
+                "shared_keys": len(shared_keys),
+                "source_only_keys": len(source_only_keys),
+                "reference_only_keys": len(reference_only_keys),
+                "symmetric_difference": len(symmetric_difference_keys),
+            },
+            "source_total": source_total,
+            "reference_total": reference_total,
+            "net_difference": round(source_total - reference_total, 2),
+            "match_rate": round(match_rate, 1),
+            "source_count": len(source_records),
+            "reference_count": len(reference_records),
+        },
+    )
 
 
 
