@@ -252,7 +252,68 @@ def exact_merchant_pass(
 
     return results
 
+def fuzzy_match_pass(
+    source_records: list[ReconciliationRecord],
+    reference_records: list[ReconciliationRecord],
+    used_source: set[int],
+    used_reference: set[int],
+    fuzzy_threshold: float,
+    date_tolerance: int,
+    amount_tolerance_cents: int,
+) -> dict[str, Any]:
+    results: dict[str, list[Any]] = {"matched": [], "amount_mismatch": [], "date_mismatch": [], "suspicious": []}
 
+    for source_index, source_record in enumerate(source_records):
+        if source_index in used_source:
+            continue
+
+        best_pair = None
+        best_type = None
+        best_reference_index = None
+
+        for reference_index, reference_record in enumerate(reference_records):
+            if reference_index in used_reference:
+                continue
+
+            if not source_record["merchant_key"] or not reference_record["merchant_key"]:
+                name_similarity = 0.75 if (
+                    abs((source_record["date"] - reference_record["date"]).days) <= date_tolerance
+                    and abs(source_record["amount_cents"] - reference_record["amount_cents"]) <= amount_tolerance_cents
+                ) else 0.0
+            else:
+                name_similarity = similarity_ratio(
+                    source_record["merchant_key"],
+                    reference_record["merchant_key"],
+                    min_ratio=fuzzy_threshold,
+                )
+
+            if name_similarity < fuzzy_threshold:
+                continue
+
+            date_gap = abs((source_record["date"] - reference_record["date"]).days)
+            amount_gap_cents = abs(source_record["amount_cents"] - reference_record["amount_cents"])
+            confidence = build_confidence(name_similarity, date_gap, amount_gap_cents, date_tolerance, amount_tolerance_cents)
+
+            if date_gap <= date_tolerance and amount_gap_cents <= amount_tolerance_cents:
+                candidate_type = "matched"
+            elif date_gap <= date_tolerance and amount_gap_cents > amount_tolerance_cents:
+                candidate_type = "amount_mismatch"
+            elif date_gap > date_tolerance and amount_gap_cents <= amount_tolerance_cents:
+                candidate_type = "date_mismatch"
+            else:
+                candidate_type = "suspicious"
+
+            if best_pair is None or confidence > best_pair["confidence"]:
+                best_pair = pair_result(source_record, reference_record, confidence, "fuzzy merchant")
+                best_type = candidate_type
+                best_reference_index = reference_index
+
+        if best_pair is not None and best_type is not None and best_reference_index is not None:
+            results[best_type].append(best_pair)
+            used_source.add(source_index)
+            used_reference.add(best_reference_index)
+
+    return results
 
 
 
