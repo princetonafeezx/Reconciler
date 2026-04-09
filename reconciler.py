@@ -315,7 +315,12 @@ def fuzzy_match_pass(
 
     return results
 
-
+def unmatched_records(records: list[ReconciliationRecord], used_indexes: set[int]) -> list[ReconciliationRecord]:
+    leftovers: list[ReconciliationRecord] = []
+    for index, record in enumerate(records):
+        if index not in used_indexes:
+            leftovers.append(record)
+    return leftovers
 
 
 
