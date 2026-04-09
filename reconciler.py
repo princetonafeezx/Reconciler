@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 ColumnMap = dict[str, int | None]
 
 
+def cents(amount: float) -> int:
+    return int(round(amount * 100))
 
 
 
